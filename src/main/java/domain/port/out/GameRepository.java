@@ -1,4 +1,4 @@
-package domain.port;
+package domain.port.out;
 
 import domain.Game;
 

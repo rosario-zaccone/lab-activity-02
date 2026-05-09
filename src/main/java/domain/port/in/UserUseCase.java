@@ -1,7 +1,7 @@
-package application.port;
+package domain.port.in;
 
 import domain.User;
 
 public interface UserUseCase {
-    void registerUser(User user);
+    User registerUser(User user);
 }

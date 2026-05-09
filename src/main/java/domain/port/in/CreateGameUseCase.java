@@ -1,4 +1,4 @@
-package application.port;
+package domain.port.in;
 
 public interface CreateGameUseCase {
 }

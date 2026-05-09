@@ -1,4 +1,4 @@
-package infrastructure.adapter;
+package infrastructure.adapter.out;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -19,7 +19,7 @@ public class JsonUserRepository implements UserRepository {
     private final File file = new File(FILE_PATH);
 
     @Override
-    public void save(User user) {
+    public User save(User user) {
         try {
             List<UserEntity> entities = file.exists()
                     ? objectMapper.readValue(file, new TypeReference<List<UserEntity>>() {})
@@ -29,6 +29,8 @@ public class JsonUserRepository implements UserRepository {
             entities.add(toEntity(user));
 
             objectMapper.writerWithDefaultPrettyPrinter().writeValue(file, entities);
+
+            return user;  // ← this was missing
         } catch (IOException e) {
             throw new RuntimeException("Failed to save user", e);
         }

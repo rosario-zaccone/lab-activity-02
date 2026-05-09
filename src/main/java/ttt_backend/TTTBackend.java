@@ -3,6 +3,10 @@ package ttt_backend;
 import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import domain.Game;
+import domain.GameSymbolType;
+import domain.User;
 import io.vertx.core.Future;
 import io.vertx.core.VerticleBase;
 import io.vertx.core.Vertx;
@@ -164,7 +168,7 @@ public class TTTBackend extends VerticleBase {
 			String userId = joinInfo.getString("userId");
 			String gameId = joinInfo.getString("gameId");
 			String symbol = joinInfo.getString("symbol");
-			var gameSym = symbol.equals("cross") ? Game.GameSymbolType.CROSS : Game.GameSymbolType.CIRCLE;		
+			var gameSym = symbol.equals("cross") ? GameSymbolType.CROSS : GameSymbolType.CIRCLE;
 			var user = users.get(userId);
 			var game = games.get(gameId);
 			
@@ -211,7 +215,7 @@ public class TTTBackend extends VerticleBase {
 				int x = Integer.parseInt(moveInfo.getString("x"));
 				int y = Integer.parseInt(moveInfo.getString("y"));
 		
-				var gameSym = symbol.equals("cross") ? Game.GameSymbolType.CROSS : Game.GameSymbolType.CIRCLE;		
+				var gameSym = symbol.equals("cross") ? GameSymbolType.CROSS : GameSymbolType.CIRCLE;
 				var user = users.get(userId);
 				var game = games.get(gameId);				
 
@@ -251,7 +255,7 @@ public class TTTBackend extends VerticleBase {
 						evEnd.put("result", "tie");					
 					} else {
 						var sym = game.getWinner().get();
-						if (sym.equals(Game.GameSymbolType.CROSS)) {
+						if (sym.equals(GameSymbolType.CROSS)) {
 							evEnd.put("winner", "cross");											
 						} else {
 							evEnd.put("winner", "circle");											

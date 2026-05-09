@@ -1,4 +1,8 @@
-package ttt_backend;
+package domain;
+
+import ttt_backend.CannotStartGameException;
+import ttt_backend.InvalidJoinException;
+import ttt_backend.InvalidMoveException;
 
 import java.util.HashMap;
 import java.util.Optional;
@@ -10,29 +14,13 @@ import java.util.Optional;
  */
 public class Game {
 
-	/* unique id of the game */
+
 	private String id;
-
-	/* data structure representing a player, i.e. a user bound to a symbol */
-	public record Player(User user, GameSymbolType symbol) {}
-	/* the two players */
 	private HashMap<GameSymbolType, Player> players;
-
-	public enum GameSymbolType { CROSS, CIRCLE, EMPTY};
-
-	/* grid */
 	private GameSymbolType[][] grid;
 	private int numFreeCellsLeft;
-
-	public enum GameState { WAITING_PLAYER, PLAYING, FINISHED }
-
-	/* state of the game */
 	private GameState state;
-
-	/* current turn */
 	private GameSymbolType currentTurn;
-	
-	/* the winner (if present) of this game */
 	private Optional<Player> winner;
 		
 	/**

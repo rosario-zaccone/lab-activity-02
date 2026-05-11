@@ -1,4 +1,4 @@
-package ttt_backend;
+package application;
 
 public class InvalidJoinException extends Exception {
 

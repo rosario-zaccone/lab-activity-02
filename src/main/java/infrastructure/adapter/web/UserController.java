@@ -1,7 +1,9 @@
-package infrastructure.adapter.in;
+package infrastructure.adapter.web;
 
+import application.port.in.RegisterUserUseCase;
+import application.service.CrudUserService;
+import common.Utils;
 import domain.User;
-import domain.port.in.UserUseCase;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 
@@ -9,11 +11,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class UserController {
-    private final UserUseCase userUseCase;
+    private final CrudUserService crudUserService;
     private final Logger logger;
 
-    public UserController(Logger logger, UserUseCase userUseCase) {
-        this.userUseCase = userUseCase;
+    public UserController(CrudUserService crudUserService, Logger logger) {
+        this.crudUserService = crudUserService;
         this.logger = logger;
     }
 
@@ -23,7 +25,7 @@ public class UserController {
             JsonObject userInfo = buf.toJsonObject();
             var userName = userInfo.getString("userName");
             var user = new User(null, userName);
-            user = userUseCase.registerUser(user);
+            user = crudUserService.registerUser(user);
             var reply = new JsonObject();
             reply.put("userId", user.id());
             reply.put("userName", user.name());

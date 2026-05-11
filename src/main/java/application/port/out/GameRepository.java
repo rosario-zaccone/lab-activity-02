@@ -1,11 +1,11 @@
-package domain.port.out;
+package application.port.out;
 
 import domain.Game;
 
 import java.util.Optional;
 
 public interface GameRepository {
-    void save(Game game);
-    Optional<Game> get(int id);
+    Game create();
+    Optional<Game> get(String id);
     void update(Game game);
 }

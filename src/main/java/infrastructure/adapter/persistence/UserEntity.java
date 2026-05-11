@@ -1,4 +1,4 @@
-package infrastructure.entity;
+package infrastructure.adapter.persistence;
 
 public class UserEntity {
     private String id;

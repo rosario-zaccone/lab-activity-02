@@ -1,7 +1,7 @@
 package domain;
 
 import ttt_backend.CannotStartGameException;
-import ttt_backend.InvalidJoinException;
+import application.InvalidJoinException;
 import ttt_backend.InvalidMoveException;
 
 import java.util.HashMap;
@@ -56,7 +56,8 @@ public class Game {
 	public void joinGame(User user, GameSymbolType symbol) throws InvalidJoinException {
 		if (!state.equals(GameState.WAITING_PLAYER) || players.containsKey(symbol)) {
 			throw new InvalidJoinException();
-		}	
+		}
+		System.out.println("state: " + state);
 		players.put(symbol, new Player(user, symbol));
 	}
 

@@ -1,7 +1,7 @@
 package infrastructure.adapter;
 
 import domain.User;
-import infrastructure.adapter.out.JsonUserRepository;
+import infrastructure.adapter.persistence.JsonUserRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -39,15 +39,15 @@ class JsonUserRepositoryTest {
     @Test
     void testSaveAndGet() {
         // Arrange
-        User user = new User("user123", "Alice");
+        User user = new User("user-123", "Alice");
 
         // Act
         repository.save(user);
-        Optional<User> retrievedUser = repository.get("user123");
+        Optional<User> retrievedUser = repository.get("user-123");
 
         // Assert
         assertTrue(retrievedUser.isPresent());
-        assertEquals("user123", retrievedUser.get().id());
+        assertEquals("user-123", retrievedUser.get().id());
         assertEquals("Alice", retrievedUser.get().name());
     }
 
@@ -63,13 +63,13 @@ class JsonUserRepositoryTest {
     @Test
     void testUpdateExistingUser() {
         // Arrange
-        User user1 = new User("user1", "Bob");
-        User user1Updated = new User("user1", "Bob Updated");
+        User user1 = new User("user-1", "Bob");
+        User user1Updated = new User("user-1", "Bob Updated");
 
         // Act
         repository.save(user1);
         repository.save(user1Updated);
-        Optional<User> retrievedUser = repository.get("user1");
+        Optional<User> retrievedUser = repository.get("user-1");
 
         // Assert
         assertTrue(retrievedUser.isPresent());

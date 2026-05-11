@@ -1,4 +1,4 @@
-package infrastructure.adapter.in;
+package common;
 
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonObject;

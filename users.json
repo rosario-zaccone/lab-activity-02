@@ -1,13 +1,7 @@
 [ {
-  "id" : "1",
+  "id" : "user-1",
   "name" : "my-player"
 }, {
-  "id" : "2",
-  "name" : "my-player"
-}, {
-  "id" : "3",
-  "name" : "poppo"
-}, {
-  "id" : "4",
-  "name" : "pluto"
+  "id" : "user-2",
+  "name" : "pippolo"
 } ]

@@ -1,10 +1,10 @@
-package infrastructure.adapter.out;
+package infrastructure.adapter.persistence;
 
+import application.port.out.UserRepository;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import domain.User;
-import domain.port.out.UserRepository;
-import infrastructure.entity.UserEntity;
+
 
 import java.io.File;
 import java.io.IOException;
@@ -30,7 +30,7 @@ public class JsonUserRepository implements UserRepository {
 
             objectMapper.writerWithDefaultPrettyPrinter().writeValue(file, entities);
 
-            return user;  // ← this was missing
+            return user;
         } catch (IOException e) {
             throw new RuntimeException("Failed to save user", e);
         }

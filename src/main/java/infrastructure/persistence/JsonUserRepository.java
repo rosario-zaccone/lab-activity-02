@@ -1,4 +1,4 @@
-package infrastructure.adapter.persistence;
+package infrastructure.persistence;
 
 import application.port.out.UserRepository;
 import com.fasterxml.jackson.core.type.TypeReference;

@@ -61,7 +61,7 @@
 	async function createGame() {
 	  const status = document.getElementById('createGameStatus');
 	  try {
-	    const response = await fetch('/api/createGame', {
+	    const response = await fetch('/api/games', {
 	      method: 'POST',
 	    });
 
@@ -83,7 +83,7 @@
 	  const userName = document.getElementById('userName').value.trim();
 	  const status = document.getElementById('registerUserStatus');
 	  try {
-	    const response = await fetch('/api/registerUser', {
+	    const response = await fetch('/api/users', {
 	      method: 'POST',
 	      headers: {
 	        'Content-Type': 'application/json'
@@ -113,12 +113,12 @@
 		const events = document.getElementById('events');
 
 		try {
-			const response = await fetch('/api/joinGame', {
-				method: 'POST',
+			const response = await fetch('/api/games/' + encodeURIComponent(gameId) + '/players/' + encodeURIComponent(userId), {
+				method: 'PUT',
 			    headers: {
 			        'Content-Type': 'application/json'
 			    },
-			    body: JSON.stringify({ userId, gameId, symbol })
+			    body: JSON.stringify({ symbol })
 			});
 
 			if (response.ok) {
@@ -129,11 +129,9 @@
 
 					/* to complete the joining stage, a websocket to receive the game events must be created */
 							  
-					ws = new WebSocket('ws://' + location.host + '/api/events');
+					ws = new WebSocket('ws://' + location.host + '/api/games/' + encodeURIComponent(gameId) + '/events');
 
-					/* when the connection is established, send a first message with the gameId */
 					ws.addEventListener('open', () => {
-						ws.send('{ "gameId": "' + gameId + '" }');
 						status.textContent = 'Game joined';
 
 						playStatus.textContent = 'Waiting another player to join...';
@@ -167,12 +165,12 @@
 	  	const y = document.getElementById('y').value;
 		      
 	  	try {
-			const response = await fetch('/api/makeAMove', {
+			const response = await fetch('/api/games/' + encodeURIComponent(gameId) + '/moves', {
 				method: 'POST',
 			  	headers: {
 			  		'Content-Type': 'application/json'
 			  	},
-			  	body: JSON.stringify({ userId, gameId, symbol, x, y })
+			  	body: JSON.stringify({ userId, symbol, x, y })
 			});
 
 			if (response.ok) {

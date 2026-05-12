@@ -1,4 +1,4 @@
-package infrastructure.adapter.web;
+package infrastructure.web;
 
 import application.port.in.RegisterUserUseCase;
 import application.service.CrudUserService;
@@ -30,6 +30,8 @@ public class UserController {
             reply.put("userId", user.id());
             reply.put("userName", user.name());
             try {
+                context.response().setStatusCode(201);
+                context.response().putHeader("Location", "/api/users/" + user.id());
                 Utils.sendReply(context.response(), reply);
             } catch (Exception ex) {
                 Utils.sendError(context.response());

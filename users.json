@@ -4,4 +4,10 @@
 }, {
   "id" : "user-2",
   "name" : "pippolo"
+}, {
+  "id" : "user-3",
+  "name" : "my-player"
+}, {
+  "id" : "user-4",
+  "name" : "my-player2"
 } ]

@@ -1,4 +1,4 @@
-package infrastructure.adapter.web;
+package infrastructure.web;
 
 import application.service.CrudGameService;
 import application.service.GameService;
@@ -6,6 +6,7 @@ import common.Utils;
 import domain.Game;
 import domain.GameSymbolType;
 import io.vertx.core.eventbus.EventBus;
+import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
@@ -32,6 +33,8 @@ public class GameController {
         var reply = new JsonObject();
         reply.put("gameId", game.getId());
         try {
+            context.response().setStatusCode(201);
+            context.response().putHeader("Location", "/api/games/" + game.getId());
             Utils.sendReply(context.response(), reply);
         } catch (Exception ex) {
             Utils.sendError(context.response());
@@ -42,8 +45,8 @@ public class GameController {
         logger.log(Level.INFO, "JoinGame request - " + context.currentRoute().getPath());
         context.request().handler(buf -> {
             JsonObject joinInfo = buf.toJsonObject();
-            String userId = joinInfo.getString("userId");
-            String gameId = joinInfo.getString("gameId");
+            String userId = context.pathParam("userId");
+            String gameId = context.pathParam("gameId");
             String symbol = joinInfo.getString("symbol");
             var reply = new JsonObject();
             try {
@@ -80,12 +83,12 @@ public class GameController {
                 logger.log(Level.INFO, "move info: " + moveInfo);
 
                 String userId = moveInfo.getString("userId");
-                String gameId = moveInfo.getString("gameId");
+                String gameId = context.pathParam("gameId");
                 String symbol = moveInfo.getString("symbol");
-                int x = Integer.parseInt(moveInfo.getString("x"));
-                int y = Integer.parseInt(moveInfo.getString("y"));
+                int x = getCoordinate(moveInfo, "x");
+                int y = getCoordinate(moveInfo, "y");
 
-                var gameSym = symbol.equals("cross") ? GameSymbolType.CROSS : GameSymbolType.CIRCLE;
+                var gameSym = toGameSymbol(symbol);
                 var game = crudGameService.getGame(gameId);
 
                 gameService.makeAMove(userId, gameId, gameSym, x, y);
@@ -133,31 +136,61 @@ public class GameController {
         });
     }
 
+    private int getCoordinate(JsonObject moveInfo, String field) {
+        Object value = moveInfo.getValue(field);
+        if (value instanceof Number number) {
+            return number.intValue();
+        }
+        return Integer.parseInt(value.toString());
+    }
+
+    private GameSymbolType toGameSymbol(String symbol) {
+        return switch (symbol.toLowerCase()) {
+            case "cross" -> GameSymbolType.CROSS;
+            case "circle" -> GameSymbolType.CIRCLE;
+            default -> GameSymbolType.valueOf(symbol.toUpperCase());
+        };
+    }
+
     public void handleEventSubscription(HttpServer server, String path) {
         server.webSocketHandler(webSocket -> {
+            String gameId = getGameIdFromEventPath(webSocket.path());
+            if (gameId == null) {
+                webSocket.close();
+                return;
+            }
+
             logger.log(Level.INFO, "New TTT subscription accepted.");
-            webSocket.textMessageHandler(openMsg -> {
-                logger.log(Level.INFO, "For game: " + openMsg);
-                JsonObject obj = new JsonObject(openMsg);
-                String gameId = obj.getString("gameId");
-
-                var gameAddress = getBusAddressForAGame(gameId);
-                eb.consumer(gameAddress, msg -> {
-                    JsonObject ev = (JsonObject) msg.body();
-                    logger.log(Level.INFO, "Notifying event to the frontend: " + ev.encodePrettily());
-                    webSocket.writeTextMessage(ev.encodePrettily());
-                });
-
-                try {
-                    if (gameService.startGame(gameId)) {
-                        var evGameStarted = new JsonObject();
-                        evGameStarted.put("event", "game-started");
-                        eb.publish(gameAddress, evGameStarted);
-                    }
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                }
+            var gameAddress = getBusAddressForAGame(gameId);
+            MessageConsumer<Object> consumer = eb.consumer(gameAddress, msg -> {
+                JsonObject ev = (JsonObject) msg.body();
+                logger.log(Level.INFO, "Notifying event to the frontend: " + ev.encodePrettily());
+                webSocket.writeTextMessage(ev.encodePrettily());
             });
+            webSocket.closeHandler(done -> consumer.unregister());
+
+            try {
+                if (gameService.startGame(gameId)) {
+                    var evGameStarted = new JsonObject();
+                    evGameStarted.put("event", "game-started");
+                    eb.publish(gameAddress, evGameStarted);
+                }
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
         });
+    }
+
+    private String getGameIdFromEventPath(String path) {
+        String prefix = "/api/games/";
+        String suffix = "/events";
+        if (!path.startsWith(prefix) || !path.endsWith(suffix)) {
+            return null;
+        }
+        String gameId = path.substring(prefix.length(), path.length() - suffix.length());
+        if (gameId.isBlank() || gameId.contains("/")) {
+            return null;
+        }
+        return gameId;
     }
 }

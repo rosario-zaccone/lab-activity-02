@@ -8,10 +8,10 @@ import application.port.out.UserRepository;
 import application.service.CrudGameService;
 import application.service.CrudUserService;
 import application.service.GameService;
-import infrastructure.adapter.persistence.InMemoryGameRepository;
-import infrastructure.adapter.web.GameController;
-import infrastructure.adapter.web.UserController;
-import infrastructure.adapter.persistence.JsonUserRepository;
+import infrastructure.persistence.InMemoryGameRepository;
+import infrastructure.web.GameController;
+import infrastructure.web.UserController;
+import infrastructure.persistence.JsonUserRepository;
 import io.vertx.core.Future;
 import io.vertx.core.VerticleBase;
 import io.vertx.core.Vertx;
@@ -34,7 +34,7 @@ public class TTTBackend extends VerticleBase {
 	private GameController gameController;
 
 	/* port of the endpoint */
-	private int port;
+	private final int port;
 
 	public TTTBackend(int port) {
 		this.port = port;
@@ -46,14 +46,14 @@ public class TTTBackend extends VerticleBase {
 		HttpServer server = vertx.createHttpServer();
 		gameController = new GameController(crudGameService, gameService, logger, vertx.eventBus());
 		Router router = Router.router(vertx);
-		router.route(HttpMethod.POST, "/api/registerUser").handler(userController::registerUser);
-		router.route(HttpMethod.POST, "/api/createGame").handler(gameController::createNewGame);
-		router.route(HttpMethod.POST, "/api/joinGame").handler(gameController::joinGame);
-		router.route(HttpMethod.POST, "/api/makeAMove").handler(gameController::makeAMove);
+		router.route(HttpMethod.POST, "/api/users").handler(userController::registerUser);
+		router.route(HttpMethod.POST, "/api/games").handler(gameController::createNewGame);
+		router.route(HttpMethod.PUT, "/api/games/:gameId/players/:userId").handler(gameController::joinGame);
+		router.route(HttpMethod.POST, "/api/games/:gameId/moves").handler(gameController::makeAMove);
 
 		/* configuring websocket handler */
 
-		gameController.handleEventSubscription(server, "/api/events");
+		gameController.handleEventSubscription(server, "/api/games/:gameId/events");
 
 		/* enabling access to static files (web app page) */
 
@@ -64,10 +64,13 @@ public class TTTBackend extends VerticleBase {
 
 		var fut = server
 				.requestHandler(router)
-				.listen(port);
+				.listen(port, "localhost");
 
 		fut.onSuccess(res -> {
 			logger.log(Level.INFO, "TTT Game Server ready - port: " + port);
+		});
+		fut.onFailure(err -> {
+			logger.log(Level.SEVERE, "TTT Game Server startup failed - port: " + port, err);
 		});
 
 		return fut;
@@ -76,7 +79,16 @@ public class TTTBackend extends VerticleBase {
 
 	public static void main(String[] args) {
 		var vertx = Vertx.vertx();
-		var server = new TTTBackend(BACKEND_PORT);
-		vertx.deployVerticle(server);
+		var server = new TTTBackend(getPort(args));
+		vertx.deployVerticle(server).onFailure(err -> {
+			logger.log(Level.SEVERE, "TTT Server deployment failed", err);
+		});
+	}
+
+	private static int getPort(String[] args) {
+		if (args.length == 0) {
+			return BACKEND_PORT;
+		}
+		return Integer.parseInt(args[0]);
 	}
 }
